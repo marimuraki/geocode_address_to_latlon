@@ -5,7 +5,7 @@
 from csv import DictReader, DictWriter
 from geopy import geocoders    
 from sys import argv
-
+import time
 
 def read_csv(input_file):
     address_file = open(input_file, 'r')
@@ -20,11 +20,17 @@ def generate_addresses(address_dicts):
     return address_dicts
         
 def geocode_addresses(address_dicts):
-    g = geocoders.GoogleV3()
+    geocoder = geocoders.GoogleV3()
     for address_dict in address_dicts:
-        address, (lat, lon) = g.geocode(address_dict["fulladdress"])
-        address_dict["latitude"] = lat
-        address_dict["longitude"] = lon
+        address_dict["error"] = ""
+        try:
+            time.sleep(1)
+            address, (lat, lon) = geocoder.geocode(address_dict["fulladdress"])
+            address_dict["fulladdress"] = address
+            address_dict["latitude"] = lat
+            address_dict["longitude"] = lon
+        except ValueError as e:
+            address_dict["error"] = e
     return address_dicts
     
 def write_csv(output_file, address_dicts):
